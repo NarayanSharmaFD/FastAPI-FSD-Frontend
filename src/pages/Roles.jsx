@@ -278,6 +278,7 @@ const Roles = () => {
                     startIcon={<Edit />}
                     onClick={() => handleOpen(role)}
                     sx={{ mr: 1 }}
+                    disabled={role.is_system_role}
                   >
                     Edit
                   </Button>
@@ -318,7 +319,7 @@ const Roles = () => {
             name="role_name"
             value={formData.role_name}
             onChange={handleInputChange}
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, mt: 2 }}
             disabled={editId && roles.find((r) => r.id === editId)?.is_system_role}
           />
           <TextField

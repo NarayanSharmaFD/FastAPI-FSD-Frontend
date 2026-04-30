@@ -333,6 +333,7 @@ const Users = () => {
             fullWidth
             disabled={!!editId}
             error={!formData.username && open}
+            sx={{ mt: 2 }}
           />
           <TextField
             label="Email"

@@ -143,7 +143,7 @@ const Login = () => {
               )}
             </Button>
 
-            <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
+            {/* <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
                 Demo Credentials:
               </Typography>
@@ -156,16 +156,7 @@ const Login = () => {
               <Typography variant="body2" component="div">
                 <strong>Viewer:</strong> viewer / password
               </Typography>
-            </Box>
-
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              align="center"
-              sx={{ mt: 3 }}
-            >
-              Having trouble? Check the demo credentials above.
-            </Typography>
+            </Box> */}
           </Box>
         </Paper>
       </Container>

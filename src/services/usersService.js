@@ -1,13 +1,7 @@
-/**
- * Users service for API communication.
- * Handles all user-related API calls.
- */
 import apiClient from './apiClient'
 
 class UsersService {
-  /**
-   * Get all users
-   */
+  
   async getAllUsers() {
     try {
       const response = await apiClient.get('/users/')
@@ -17,9 +11,6 @@ class UsersService {
     }
   }
 
-  /**
-   * Get user by ID
-   */
   async getUserById(userId) {
     try {
       const response = await apiClient.get(`/users/${userId}`)
@@ -29,9 +20,6 @@ class UsersService {
     }
   }
 
-  /**
-   * Create a new user
-   */
   async createUser(userData) {
     try {
       const response = await apiClient.post('/users/', userData)
@@ -41,9 +29,6 @@ class UsersService {
     }
   }
 
-  /**
-   * Update a user
-   */
   async updateUser(userId, userData) {
     try {
       const response = await apiClient.patch(`/users/${userId}`, userData)
@@ -53,9 +38,6 @@ class UsersService {
     }
   }
 
-  /**
-   * Delete a user
-   */
   async deleteUser(userId) {
     try {
       const response = await apiClient.delete(`/users/${userId}`)
@@ -65,9 +47,6 @@ class UsersService {
     }
   }
 
-  /**
-   * Get current user info
-   */
   async getCurrentUser() {
     try {
       const response = await apiClient.get('/users/me')
