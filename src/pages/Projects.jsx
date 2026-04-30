@@ -315,7 +315,6 @@ const Projects = () => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             fullWidth
             error={!formData.name && open}
-            sx={{ mt: 2 }}
           />
           <TextField
             label="Description"

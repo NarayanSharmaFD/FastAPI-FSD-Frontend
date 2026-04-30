@@ -17,6 +17,7 @@ export const authService = {
   },
 
   getCurrentUser: (token) => {
+    // If token is provided, use it directly instead of relying on localStorage
     if (token) {
       return axios.get(
         `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api'}/users/me`,

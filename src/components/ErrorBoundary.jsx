@@ -2,6 +2,11 @@ import React from 'react'
 import { Box, Typography, Button } from '@mui/material'
 import ErrorIcon from '@mui/icons-material/Error'
 
+/**
+ * ErrorBoundary Component
+ * Catches React component errors and displays user-friendly error UI
+ * Prevents entire app from crashing on component error
+ */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)

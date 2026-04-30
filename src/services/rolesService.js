@@ -1,6 +1,13 @@
+/**
+ * Roles service for API communication.
+ * Handles all role-related API calls.
+ */
 import apiClient from './apiClient'
 
 class RolesService {
+  /**
+   * Get all roles
+   */
   async getAllRoles() {
     try {
       const response = await apiClient.get('/roles/')
@@ -10,6 +17,9 @@ class RolesService {
     }
   }
 
+  /**
+   * Get role by ID
+   */
   async getRoleById(roleId) {
     try {
       const response = await apiClient.get(`/roles/${roleId}`)
@@ -19,6 +29,9 @@ class RolesService {
     }
   }
 
+  /**
+   * Create a new role
+   */
   async createRole(roleData) {
     try {
       const response = await apiClient.post('/roles/', roleData)
@@ -28,6 +41,9 @@ class RolesService {
     }
   }
 
+  /**
+   * Update a role
+   */
   async updateRole(roleId, roleData) {
     try {
       const response = await apiClient.put(`/roles/${roleId}`, roleData)
@@ -37,6 +53,9 @@ class RolesService {
     }
   }
 
+  /**
+   * Delete a role
+   */
   async deleteRole(roleId) {
     try {
       const response = await apiClient.delete(`/roles/${roleId}`)
@@ -46,6 +65,9 @@ class RolesService {
     }
   }
 
+  /**
+   * Check permission for a resource and action
+   */
   async checkPermission(roleId, resource, action) {
     try {
       const response = await apiClient.get(

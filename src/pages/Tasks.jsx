@@ -43,7 +43,7 @@ const Tasks = () => {
   const { items: tasks, status, error } = useSelector((state) => state.tasks)
   const { items: projects } = useSelector((state) => state.projects)
   const { items: users, status: usersStatus } = useSelector((state) => state.users)
-  const { user: currentUser } = useSelector((state) => state.auth)
+  const { role, user: currentUser } = useSelector((state) => state.auth)
   const { permissions } = useSelector((state) => state.permissions)
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -80,20 +80,6 @@ const Tasks = () => {
     }
   }, [error, showToast])
 
-  // Check if user can edit this task
-  const canEditTask = (task) => {
-    // Full edit if user has update permission
-    if (canUpdate) return true
-    // Or if task is assigned to them (status-only edit)
-    if (task && task.assigned_user_id === currentUser?.id) return true
-    return false
-  }
-
-  // Check if this is a status-only edit (assigned user without full update permission)
-  const isStatusOnlyEdit = (task) => {
-    return !canUpdate && task && task.assigned_user_id === currentUser?.id
-  }
-
   const handleOpen = (task = null) => {
     if (task) {
       setEditId(task.id)
@@ -126,34 +112,20 @@ const Tasks = () => {
   }
 
   const handleSave = async () => {
-    // Check title requirement for new tasks or full edits
-    if (!editId || !isStatusOnlyEdit(tasks.find(t => t.id === editId))) {
-      if (!formData.title.trim()) {
-        showToast('Task title is required', 'warning')
-        return
-      }
+    if (!formData.title.trim()) {
+      showToast('Task title is required', 'warning')
+      return
     }
 
-    let cleanedData
-    
-    // For status-only edits (assigned user without full update permission)
-    const currentTask = tasks.find(t => t.id === editId)
-    if (editId && isStatusOnlyEdit(currentTask)) {
-      // Only update status for assigned users
-      cleanedData = {
-        status: formData.status || 'new',
-      }
-    } else {
-      // Full update with all fields
-      cleanedData = {
-        title: formData.title,
-        description: formData.description || null,
-        status: formData.status || 'new',
-        project_id: formData.project_id ? parseInt(formData.project_id) : null,
-        owner_id: formData.owner_id ? parseInt(formData.owner_id) : null,
-        assigned_user_id: formData.assigned_user_id ? parseInt(formData.assigned_user_id) : null,
-        due_date: formData.due_date || null,
-      }
+    // Clean up form data - convert empty strings to null/undefined for optional fields
+    const cleanedData = {
+      title: formData.title,
+      description: formData.description || null,
+      status: formData.status || 'new',
+      project_id: formData.project_id ? parseInt(formData.project_id) : null,
+      owner_id: formData.owner_id ? parseInt(formData.owner_id) : null,
+      assigned_user_id: formData.assigned_user_id ? parseInt(formData.assigned_user_id) : null,
+      due_date: formData.due_date || null,
     }
 
     try {
@@ -197,16 +169,8 @@ const Tasks = () => {
       (task.description &&
         task.description.toLowerCase().includes(search))
     const matchesStatus = !statusFilter || task.status === statusFilter
-    
-    // If user role is 'read_only', only show tasks assigned to them
-    const matchesRole = currentUser?.role !== 'read_only' || task.assigned_user_id === currentUser?.id
-
-    console.log(task.assigned_user_id, currentUser?.id)
-    console.log(matchesSearch && matchesStatus && matchesRole)
-    return matchesSearch && matchesStatus && matchesRole
+    return matchesSearch && matchesStatus
   })
-
-  console.log('Filtered Tasks:', filteredTasks)
 
   // Pagination
   const paginatedTasks = filteredTasks.slice(
@@ -353,7 +317,11 @@ const Tasks = () => {
                   <TableCell sx={{ fontWeight: 700 }}>Owner</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Assigned To</TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>Due Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
+                  {(canUpdate || canDelete) && (
+                    <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>
+                      Actions
+                    </TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -381,13 +349,13 @@ const Tasks = () => {
                     <TableCell>
                       {task.due_date ? task.due_date.split('T')[0] : '-'}
                     </TableCell>
-                    {(canUpdate || canDelete || canEditTask(task)) && (
+                    {(canUpdate || canDelete) && (
                       <TableCell sx={{ textAlign: 'right' }}>
                         <Button
                           size="small"
                           startIcon={<Edit />}
                           onClick={() => handleOpen(task)}
-                          disabled={!canEditTask(task)}
+                          disabled={!canUpdate}
                           sx={{ mr: 1 }}
                         >
                           Edit
@@ -426,87 +394,26 @@ const Tasks = () => {
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
-          {editId ? (
-            isStatusOnlyEdit(tasks.find(t => t.id === editId)) 
-              ? 'Update Task Status' 
-              : 'Edit Task'
-          ) : 'Create New Task'}
+          {editId ? 'Edit Task' : 'Create New Task'}
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-          {/* Show status-only message for assigned users without full permissions */}
-          {editId && isStatusOnlyEdit(tasks.find(t => t.id === editId)) && (
-            <Typography variant="body2" color="info.main" sx={{ mb: 1 }}>
-              You can only update the status of this task.
-            </Typography>
-          )}
-          
-          {/* Show all fields only if user has full update permission */}
-          {!editId || !isStatusOnlyEdit(tasks.find(t => t.id === editId)) ? (
-            <>
-              <TextField
-                label="Task Title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                fullWidth
-                error={!formData.title && open}
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                label="Description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                fullWidth
-                multiline
-                rows={3}
-              />
-              <FormControl fullWidth>
-                <InputLabel>Project (Optional)</InputLabel>
-                <Select
-                  value={formData.project_id}
-                  label="Project (Optional)"
-                  onChange={(e) =>
-                    setFormData({ ...formData, project_id: e.target.value })
-                  }
-                >
-                  <MenuItem value="">None</MenuItem>
-                  {projects.map((project) => (
-                    <MenuItem key={project.id} value={project.id}>
-                      {project.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                label="Due Date"
-                type="date"
-                value={formData.due_date}
-                onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-              <FormControl fullWidth>
-                <InputLabel>Assign To (Optional)</InputLabel>
-                <Select
-                  value={formData.assigned_user_id}
-                  label="Assign To (Optional)"
-                  onChange={(e) =>
-                    setFormData({ ...formData, assigned_user_id: e.target.value })
-                  }
-                >
-                  <MenuItem value="">None</MenuItem>
-                  {users && users.map((user) => (
-                    <MenuItem key={user.id} value={user.id}>
-                      {user.username}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </>
-          ) : null}
-          
-          {/* Status field - always visible */}
+          <TextField
+            label="Task Title"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            fullWidth
+            error={!formData.title && open}
+          />
+          <TextField
+            label="Description"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            fullWidth
+            multiline
+            rows={3}
+          />
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select
@@ -519,6 +426,48 @@ const Tasks = () => {
               <MenuItem value="in-progress">In Progress</MenuItem>
               <MenuItem value="blocked">Blocked</MenuItem>
               <MenuItem value="completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Project (Optional)</InputLabel>
+            <Select
+              value={formData.project_id}
+              label="Project (Optional)"
+              onChange={(e) =>
+                setFormData({ ...formData, project_id: e.target.value })
+              }
+            >
+              <MenuItem value="">None</MenuItem>
+              {projects.map((project) => (
+                <MenuItem key={project.id} value={project.id}>
+                  {project.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Due Date"
+            type="date"
+            value={formData.due_date}
+            onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+          <FormControl fullWidth>
+            <InputLabel>Assign To (Optional)</InputLabel>
+            <Select
+              value={formData.assigned_user_id}
+              label="Assign To (Optional)"
+              onChange={(e) =>
+                setFormData({ ...formData, assigned_user_id: e.target.value })
+              }
+            >
+              <MenuItem value="">None</MenuItem>
+              {users && users.map((user) => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.username}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </DialogContent>

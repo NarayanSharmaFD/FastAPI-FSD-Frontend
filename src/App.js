@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { CssBaseline, Box } from '@mui/material'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { fetchPermissions } from './store/permissionsSlice'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Projects from './pages/Projects'
@@ -15,10 +16,15 @@ import { ToastProvider } from './context/ToastContext'
 import { ConfirmationProvider } from './context/ConfirmationContext'
 
 function App() {
+  const dispatch = useDispatch()
   const { isAuthenticated } = useSelector((state) => state.auth)
 
-  // Permissions are automatically loaded from /users/me endpoint on login
-  // No need for separate permissions fetch
+  // Fetch permissions when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchPermissions())
+    }
+  }, [isAuthenticated, dispatch])
 
   return (
     <ErrorBoundary>

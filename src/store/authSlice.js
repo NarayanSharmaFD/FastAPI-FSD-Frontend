@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { authService } from '../services'
-import { setPermissionsFromUser, clearPermissions } from './permissionsSlice'
 
 // Async thunk for login
 export const login = createAsyncThunk('auth/login', async ({ username, password }, thunkAPI) => {
@@ -17,10 +16,6 @@ export const login = createAsyncThunk('auth/login', async ({ username, password 
       const userData = userResponse.data
       console.log('✓ User details received:', userData)
       localStorage.setItem('user', JSON.stringify(userData))
-      
-      // Set permissions from user data (role and permissions now come from /users/me)
-      thunkAPI.dispatch(setPermissionsFromUser(userData))
-      
       return { token, user: userData }
     } catch (err) {
       console.error('✗ Error fetching user details:', err)
@@ -33,11 +28,9 @@ export const login = createAsyncThunk('auth/login', async ({ username, password 
   }
 })
 
-export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
+export const logout = createAsyncThunk('auth/logout', async () => {
   try {
     authService.logout()
-    // Clear permissions when logging out
-    thunkAPI.dispatch(clearPermissions())
     return {}
   } catch (err) {
     return {}
