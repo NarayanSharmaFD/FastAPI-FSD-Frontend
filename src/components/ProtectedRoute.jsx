@@ -4,22 +4,7 @@ import { useSelector } from 'react-redux'
 import { Box, Typography, Button } from '@mui/material'
 import LockIcon from '@mui/icons-material/Lock'
 
-/**
- * ProtectedRoute Component
- * Protects routes based on:
- * 1. Authentication (token exists)
- * 2. User role (admin, task_creator, read_only)
- * 
- * Usage:
- * <ProtectedRoute requiredRole="admin">
- *   <AdminPage />
- * </ProtectedRoute>
- * 
- * Roles:
- * - admin: Full access to all features
- * - task_creator: Can create/edit tasks and projects, manage own data
- * - read_only: Can only view data
- */
+
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { token, user } = useSelector((state) => state.auth)
   const role = user?.role
