@@ -29,7 +29,11 @@ export const login = createAsyncThunk('auth/login', async ({ username, password 
     }
   } catch (err) {
     console.error('✗ Login error:', err)
-    return thunkAPI.rejectWithValue(err.message || 'Login failed')
+    // Handle both error object and string errors
+    const errorMessage = typeof err === 'object' && err?.message 
+      ? err.message 
+      : (typeof err === 'string' ? err : 'Login failed')
+    return thunkAPI.rejectWithValue(errorMessage)
   }
 })
 

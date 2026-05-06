@@ -27,6 +27,11 @@ apiClient.interceptors.response.use(
   (error) => {
     const errorMessage = error.response?.data?.detail || error.message || 'An error occurred'
     
+    // Handle 503 Service Unavailable
+    if (error.response?.status === 503) {
+      console.error('Backend service unavailable. Please check if the API server is running.')
+    }
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('user')
