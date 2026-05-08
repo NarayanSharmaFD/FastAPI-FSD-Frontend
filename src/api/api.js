@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 // Normalize base URL from env. Expect REACT_APP_API_URL to include '/api' if desired.
-const rawBase = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api'
+const rawBase = process.env.REACT_APP_API_URL
+console.log('API base URL:', rawBase) // Debug log to verify the base URL
 // remove trailing slash if present
 const baseURL = rawBase.replace(/\/+$/, '')
 
