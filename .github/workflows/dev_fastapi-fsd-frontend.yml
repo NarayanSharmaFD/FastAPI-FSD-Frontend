@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - tiger-fsd-frontend-802895
+name: Build and deploy Node.js app to Azure Web App - fastapi-fsd-frontend
 
 on:
   push:
@@ -7,7 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: fastapi-fsd-frontend # Set this to your Azure Web App name
+  AZURE_WEBAPP_NAME: fastapi-fsd-frontend
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '22'
 
 jobs:
   build:
@@ -19,25 +21,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
-          node-version: '22'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build Vite app
+      - name: Run tests
+        run: npm test -- --passWithNoTests --watchAll=false
+        continue-on-error: true
+
+      - name: Build React app
         run: npm run build
+        env:
+          REACT_APP_API_URL: https://fastapi-fsd-backend.azurewebsites.net/api
 
       - name: Verify build output
-        run: ls -la dist
+        run: ls -la build && ls -la build/index.html
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vite-build
-          path: dist
+          name: react-build
+          path: build
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,12 +55,12 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: vite-build
-          path: build
+          name: react-build
+          path: ./build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: dist
+          package: ./build
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
