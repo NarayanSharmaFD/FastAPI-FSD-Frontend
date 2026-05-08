@@ -52,6 +52,9 @@ jobs:
     needs: build
 
     steps:
+      - name: Checkout code for web.config
+        uses: actions/checkout@v4
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
@@ -61,11 +64,13 @@ jobs:
       - name: List artifacts to verify
         run: ls -la build/
 
-      - name: Checkout code for web.config
-        uses: actions/checkout@v4
-
       - name: Copy web.config to build folder
-        run: cp web.config build/
+        run: |
+          if [ -f web.config ]; then
+            cp web.config build/
+          else
+            echo "web.config not found, skipping"
+          fi
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
