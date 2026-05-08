@@ -52,8 +52,13 @@ jobs:
     needs: build
 
     steps:
-      - name: Checkout code for web.config
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -64,17 +69,12 @@ jobs:
       - name: List artifacts to verify
         run: ls -la build/
 
-      - name: Copy web.config to build folder
-        run: |
-          if [ -f web.config ]; then
-            cp web.config build/
-          else
-            echo "web.config not found, skipping"
-          fi
+      - name: Install production dependencies only
+        run: npm install --only=production
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: build
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2C37BFDD1A9E4E6E978966F86D275CA2 }}
