@@ -58,6 +58,12 @@ jobs:
           name: react-build
           path: ./build
 
+      - name: Checkout code for web.config
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: web.config
+          sparse-checkout-cone-mode: false
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
