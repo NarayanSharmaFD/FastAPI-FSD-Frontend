@@ -56,17 +56,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: react-build
-          path: ./build
+          path: build
+
+      - name: List artifacts to verify
+        run: ls -la build/
 
       - name: Checkout code for web.config
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: web.config
-          sparse-checkout-cone-mode: false
+
+      - name: Copy web.config to build folder
+        run: cp web.config build/
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ./build
+          package: build
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2C37BFDD1A9E4E6E978966F86D275CA2 }}
